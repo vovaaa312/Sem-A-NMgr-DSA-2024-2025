@@ -15,7 +15,6 @@ namespace Sem_A_NMgr_DSA_2024_2025.Graph
 
         public abstract void RemoveEdge(string from, string to);
 
-        public abstract List<string> ShortestPath(string start, string end);
 
         public void AddNode(string name)
         {
@@ -29,7 +28,6 @@ namespace Sem_A_NMgr_DSA_2024_2025.Graph
         {
             if (nodes.ContainsKey(name))
             {
-                // Удаляем узел и все связанные с ним грани
                 var nodeToRemove = nodes[name];
                 foreach (var neighbor in nodeToRemove.GetNeighbors().Keys)
                 {
@@ -38,6 +36,7 @@ namespace Sem_A_NMgr_DSA_2024_2025.Graph
                 nodes.Remove(name);
             }
         }
+        public abstract List<string> ShortestPath(string start, string end);
 
         public Node GetNode(string name)
         {

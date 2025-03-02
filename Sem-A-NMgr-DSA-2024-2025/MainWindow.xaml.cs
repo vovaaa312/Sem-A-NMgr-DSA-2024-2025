@@ -1,10 +1,11 @@
-﻿using Sem_A_NMgr_DSA_2024_2025.Graph;
-using GraphSharp.Controls;
-using QuickGraph;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
-using System.Windows.Media;
+using System.Windows.Controls;
+using GraphSharp.Controls;
+using QuickGraph;
+using Sem_A_NMgr_DSA_2024_2025.Graph;
 
 namespace Sem_A_NMgr_DSA_2024_2025
 {
@@ -66,9 +67,12 @@ namespace Sem_A_NMgr_DSA_2024_2025
             if (int.TryParse(EdgeWeightInput.Text, out int weight))
             {
                 graph.AddEdge(from, to, weight);
-                visualGraph.AddEdge(new WeightedEdge<object>(from, to, weight));
+                var edge = new WeightedEdge<object>(from, to, weight);
+                visualGraph.AddEdge(edge);
+
                 UpdateNodesEdgesGrid();
                 DrawGraph();
+
                 EdgeFromInput.Clear();
                 EdgeToInput.Clear();
                 EdgeWeightInput.Clear();
@@ -77,46 +81,33 @@ namespace Sem_A_NMgr_DSA_2024_2025
 
         private void RemoveEdge_Click(object sender, RoutedEventArgs e)
         {
-            string from = EdgeFromInput.Text;
-            string to = EdgeToInput.Text;
-            graph.RemoveEdge(from, to);
-            var edge = visualGraph.Edges.FirstOrDefault(e => e.Source.ToString() == from && e.Target.ToString() == to);
-            if (edge != null)
+            var selectedItem = NodesEdgesGrid.SelectedItem as dynamic;
+            if (selectedItem != null)
             {
-                visualGraph.RemoveEdge(edge);
+                string from = selectedItem.NodeName;
+                string to = selectedItem.NeighborNode;
+
+                if (!string.IsNullOrEmpty(from) && !string.IsNullOrEmpty(to))
+                {
+                    graph.RemoveEdge(from, to);
+                    var edge = visualGraph.Edges.FirstOrDefault(e => e.Source.ToString() == from && e.Target.ToString() == to);
+                    if (edge != null)
+                    {
+                        visualGraph.RemoveEdge(edge);
+                    }
+                    UpdateNodesEdgesGrid();
+                    DrawGraph();
+                }
             }
-            UpdateNodesEdgesGrid();
-            DrawGraph();
-            EdgeFromInput.Clear();
-            EdgeToInput.Clear();
+            else
+            {
+                MessageBox.Show("Please select an edge to remove.");
+            }
         }
 
         private void EditEdge_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show("Editing an edge is not implemented yet.");
-        }
-
-        private void FindShortestPath_Click(object sender, RoutedEventArgs e)
-        {
-            string startNode = StartNodeInput.Text;
-            string endNode = EndNodeInput.Text;
-
-            if (!string.IsNullOrEmpty(startNode) && !string.IsNullOrEmpty(endNode))
-            {
-                var path = graph.ShortestPath(startNode, endNode);
-                if (path.Count > 0)
-                {
-                    UpdateShortestPathsGrid(new List<string> { string.Join(" -> ", path) });
-                }
-                else
-                {
-                    MessageBox.Show("No path found.");
-                }
-            }
-            else
-            {
-                MessageBox.Show("Please enter both start and end nodes.");
-            }
         }
 
         private void ClearAll_Click(object sender, RoutedEventArgs e)
@@ -133,13 +124,11 @@ namespace Sem_A_NMgr_DSA_2024_2025
             NodesEdgesGrid.Items.Clear();
             var nodes = graph.GetNodes().ToList();
 
-            // Добавляем узлы
             foreach (var node in nodes)
             {
                 NodesEdgesGrid.Items.Add(new { NodeName = node.GetName(), NeighborNode = "", Weight = "" });
             }
 
-            // Добавляем грани (без дублирования)
             var addedEdges = new HashSet<string>();
             foreach (var node in nodes)
             {
@@ -171,16 +160,35 @@ namespace Sem_A_NMgr_DSA_2024_2025
         {
             GraphLayout.Relayout();
         }
-    }
 
-    // Класс для хранения грани с весом
-    public class WeightedEdge<T> : Edge<T>
-    {
-        public int Weight { get; }
-
-        public WeightedEdge(T source, T target, int weight) : base(source, target)
+        private void ExportPathsFromNode_Click(object sender, RoutedEventArgs e)
         {
-            Weight = weight;
+            string nodeName = ExportNodeInput.Text;
+            if (!string.IsNullOrEmpty(nodeName))
+            {
+                var paths = graph.ExportPathsFromNode(nodeName);
+                UpdateShortestPathsGrid(paths);
+            }
+            else
+            {
+                MessageBox.Show("Please enter a node name.");
+            }
+        }
+
+        private void ExportPathsToNode_Click(object sender, RoutedEventArgs e)
+        {
+            string nodeName = ExportNodeInput.Text;
+            if (!string.IsNullOrEmpty(nodeName))
+            {
+                var paths = graph.ExportPathsToNode(nodeName);
+                UpdateShortestPathsGrid(paths);
+            }
+            else
+            {
+                MessageBox.Show("Please enter a node name.");
+            }
         }
     }
+
+
 }

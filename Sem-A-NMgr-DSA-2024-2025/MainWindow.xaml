@@ -5,13 +5,27 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:graphsharp="clr-namespace:GraphSharp.Controls;assembly=GraphSharp.Controls"
         mc:Ignorable="d"
-        Title="Road Network Graph" Height="720" Width="1280">
+        Title="Road Network Graph" Height="720" Width="1440">
+    <!--<Window.Resources>
+        <Style TargetType="graphsharp:EdgeControl">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="graphsharp:EdgeControl">
+                        <Grid>
+                            <Path Stroke="Black" StrokeThickness="2" />
+                            <TextBlock Text="{Binding Weight}" Foreground="Black" Background="White" />
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>-->
     <Grid>
         <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1.5*" />
             <ColumnDefinition Width="2*" />
-            <ColumnDefinition Width="5*" />
+            <ColumnDefinition Width="3.5*" />
             <ColumnDefinition Width="3*" />
-            <ColumnDefinition Width="4*" />
         </Grid.ColumnDefinitions>
 
         <!-- Control Elements -->
@@ -38,12 +52,12 @@
                 </StackPanel>
             </GroupBox>
 
-            <!-- Shortest Path Search -->
-            <GroupBox Header="Shortest Path Search" Margin="0,5">
+            <!-- Export Paths -->
+            <GroupBox Header="Export Paths" Margin="0,5">
                 <StackPanel>
-                    <TextBox x:Name="StartNodeInput" ToolTip="Start Node" Margin="0,5"/>
-                    <TextBox x:Name="EndNodeInput" ToolTip="End Node" Margin="0,5"/>
-                    <Button Content="Find Shortest Path" Click="FindShortestPath_Click" Margin="0,5"/>
+                    <TextBox x:Name="ExportNodeInput" ToolTip="Node Name" Margin="0,5"/>
+                    <Button Content="Export Paths From Node" Click="ExportPathsFromNode_Click" Margin="0,5"/>
+                    <Button Content="Export Paths To Node" Click="ExportPathsToNode_Click" Margin="0,5"/>
                 </StackPanel>
             </GroupBox>
 

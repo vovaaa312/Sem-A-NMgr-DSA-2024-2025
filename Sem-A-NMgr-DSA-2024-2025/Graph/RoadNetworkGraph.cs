@@ -11,7 +11,6 @@ namespace Sem_A_NMgr_DSA_2024_2025.Graph
             AddNode(from);
             AddNode(to);
 
-            // Добавляем грань только в одном направлении
             if (!nodes[from].GetNeighbors().ContainsKey(nodes[to]))
             {
                 nodes[from].AddNeighbor(nodes[to], weight);
@@ -23,7 +22,6 @@ namespace Sem_A_NMgr_DSA_2024_2025.Graph
         {
             if (nodes.ContainsKey(from) && nodes.ContainsKey(to))
             {
-                // Удаляем грань в обоих направлениях
                 nodes[from].RemoveNeighbor(nodes[to]);
                 nodes[to].RemoveNeighbor(nodes[from]);
             }
@@ -33,6 +31,7 @@ namespace Sem_A_NMgr_DSA_2024_2025.Graph
         {
             var distances = new Dictionary<Node, int>();
             var previous = new Dictionary<Node, Node>();
+            //var queue = new PriorityQueue<Node>(Comparer<Node>.Create((a, b) => distances[a] - distances[b]));
             var queue = new PriorityQueue<Node>(Comparer<Node>.Create((a, b) => distances[a] - distances[b]));
 
             Node source = GetNode(start);
