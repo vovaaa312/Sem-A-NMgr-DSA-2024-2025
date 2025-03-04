@@ -36,7 +36,6 @@
                     <TextBox x:Name="NodeNameInput" ToolTip="Node Name" Margin="0,5"/>
                     <Button Content="Add Node" Click="AddNode_Click" Margin="0,5"/>
                     <Button Content="Remove Node" Click="RemoveNode_Click" Margin="0,5"/>
-                    <Button Content="Edit Node" Click="EditNode_Click" Margin="0,5"/>
 
                 </StackPanel>
             </GroupBox>
@@ -49,7 +48,6 @@
                     <TextBox x:Name="EdgeWeightInput" ToolTip="Weight" Margin="0,5"/>
                     <Button Content="Add Edge" Click="AddEdge_Click" Margin="0,5"/>
                     <Button Content="Remove Edge" Click="RemoveEdge_Click" Margin="0,5"/>
-                    <Button Content="Edit Edge" Click="EditEdge_Click" Margin="0,5"/>
                 </StackPanel>
             </GroupBox>
 
@@ -90,24 +88,23 @@
                 <RowDefinition/>
             </Grid.RowDefinitions>
 
-<!-- Shortest Paths Table -->
+            <!-- Shortest Paths Table -->
             <DataGrid  IsReadOnly="True" Grid.Row="0" Margin="10" AutoGenerateColumns="False" x:Name="ShortestPathsGrid">
-    <DataGrid.Columns>
-        <DataGridTextColumn Header="Start Node" Binding="{Binding StartNode}" />
-        <DataGridTextColumn Header="End Node" Binding="{Binding EndNode}" />
-        <DataGridTextColumn Header="Path" Binding="{Binding Path}" />
-        <DataGridTextColumn Header="Weight" Binding="{Binding Weight}" />
-    </DataGrid.Columns>
-</DataGrid>
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Start Node" Binding="{Binding StartNode}" />
+                    <DataGridTextColumn Header="End Node" Binding="{Binding EndNode}" />
+                    <DataGridTextColumn Header="Path" Binding="{Binding Path}" />
+                    <DataGridTextColumn Header="Weight" Binding="{Binding Weight}" />
+                </DataGrid.Columns>
+            </DataGrid>
 
-<!-- Successor Vector Table -->
-            <DataGrid  IsReadOnly="True" Grid.Row="1" Margin="10" AutoGenerateColumns="False" x:Name="SuccessorVectorGrid">
-    <DataGrid.Columns>
-        <DataGridTextColumn Header="Node" Binding="{Binding Node}" />
-        <DataGridTextColumn Header="Next Node" Binding="{Binding NextNode}" />
-        <DataGridTextColumn Header="Weight" Binding="{Binding Weight}" />
-    </DataGrid.Columns>
-</DataGrid>
+            <!-- Successor Vector Table -->
+            <DataGrid IsReadOnly="True" Grid.Row="1" Margin="10" AutoGenerateColumns="False" x:Name="SuccessorVectorGrid">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Node" Binding="{Binding Node}" />
+                    <DataGridTextColumn Header="Neighbors" Binding="{Binding NeighborsString}" />
+                </DataGrid.Columns>
+            </DataGrid>
         </Grid>
 
         <!-- Graph Visualization -->

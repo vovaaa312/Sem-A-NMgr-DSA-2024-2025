@@ -32,11 +32,15 @@ namespace Sem_A_NMgr_DSA_2024_2025.Graph
         {
             var distances = new Dictionary<Node, int>();
             var previous = new Dictionary<Node, Node>();
-            //var queue = new PriorityQueue<Node>(Comparer<Node>.Create((a, b) => distances[a] - distances[b]));
             var queue = new PriorityQueue<Node>(Comparer<Node>.Create((a, b) => distances[a] - distances[b]));
 
             Node source = GetNode(start);
             Node target = GetNode(end);
+
+            if (source == null || target == null)
+            {
+                return new List<string>(); 
+            }
 
             foreach (var node in nodes.Values)
             {
@@ -121,7 +125,7 @@ namespace Sem_A_NMgr_DSA_2024_2025.Graph
             var routingMatrix = new List<RoutingMatrixEntry>();
             var shortestPaths = new Dictionary<string, List<string>>();
 
-            // Вычисляем кратчайшие пути от startNode до всех остальных узлов
+            
             foreach (var node in nodes.Values)
             {
                 if (node.GetName() != startNode)
@@ -153,57 +157,23 @@ namespace Sem_A_NMgr_DSA_2024_2025.Graph
             return routingMatrix;
         }
 
-        public List<SuccessorVectorEntry> GetSuccessorVector(string endNode)
+        public List<SuccessorVectorEntry> GetSuccessorVector()
         {
             var successorVector = new List<SuccessorVectorEntry>();
 
-            // Вычисляем кратчайшие пути от всех узлов до endNode
             foreach (var node in nodes.Values)
             {
-                if (node.GetName() != endNode)
+                successorVector.Add(new SuccessorVectorEntry
                 {
-                    var path = ShortestPath(node.GetName(), endNode);
-                    if (path.Count > 1)
-                    {
-                        successorVector.Add(new SuccessorVectorEntry
-                        {
-                            Node = node.GetName(),
-                            NextNode = path[1], // Следующая вершина на пути
-                            Weight = node.GetNeighbors()[nodes[path[1]]]
-                        });
-                    }
-                }
+                    Node = node.GetName(),
+                    Neighbors = node.GetNeighbors().Keys.ToList() 
+                });
             }
 
             return successorVector;
         }
 
-        //public BidirectionalGraph<object, IEdge<object>> GenerateDirectedGraph(string startNode)
-        //{
-        //    var directedGraph = new BidirectionalGraph<object, IEdge<object>>();
 
-        //    // Добавляем вершины
-        //    foreach (var node in nodes.Values)
-        //    {
-        //        directedGraph.AddVertex(node.GetName());
-        //    }
-
-        //    // Добавляем рёбра на основе кратчайших путей
-        //    foreach (var node in nodes.Values)
-        //    {
-        //        if (node.GetName() != startNode)
-        //        {
-        //            var path = ShortestPath(startNode, node.GetName());
-        //            for (int i = 0; i < path.Count - 1; i++)
-        //            {
-        //                var edge = new WeightedEdge<object>(path[i], path[i + 1], nodes[path[i]].GetNeighbors()[nodes[path[i + 1]]]);
-        //                directedGraph.AddEdge(edge);
-        //            }
-        //        }
-        //    }
-
-        //    return directedGraph;
-        //}
     }
 
     public class RoutingMatrixEntry
@@ -216,11 +186,13 @@ namespace Sem_A_NMgr_DSA_2024_2025.Graph
         public int Weight { get; set; }
     }
 
+
     public class SuccessorVectorEntry
     {
-        public string Node { get; set; }
-        public string NextNode { get; set; }
-        public int Weight { get; set; }
+        public string Node { get; set; } 
+        public List<Node> Neighbors { get; set; } 
+
+        public string NeighborsString => string.Join(", ", Neighbors.Select(n => n.GetName()));
     }
 }
 

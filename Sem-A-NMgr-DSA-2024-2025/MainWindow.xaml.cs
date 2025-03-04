@@ -23,7 +23,6 @@ namespace Sem_A_NMgr_DSA_2024_2025
             InitializeComponent();
             GraphLayout.Graph = visualGraph;
 
-            // Привязка данных
             ShortestPathsGrid.ItemsSource = _routingMatrixData;
             SuccessorVectorGrid.ItemsSource = _successorVectorData;
 
@@ -43,7 +42,7 @@ namespace Sem_A_NMgr_DSA_2024_2025
                 NodeNameInput.Clear();
 
                 UpdateRoutingMatrix(nodeName);
-                UpdateSuccessorVector(nodeName);
+                UpdateSuccessorVector();
             }
         }
 
@@ -60,8 +59,11 @@ namespace Sem_A_NMgr_DSA_2024_2025
                     UpdateNodesEdgesGrid();
                     DrawGraph();
 
+                    _routingMatrixData.Clear();
+                    _successorVectorData.Clear();
+
                     UpdateRoutingMatrix(nodeName);
-                    UpdateSuccessorVector(nodeName);
+                    UpdateSuccessorVector();
                 }
             }
             else
@@ -70,10 +72,7 @@ namespace Sem_A_NMgr_DSA_2024_2025
             }
         }
 
-        private void EditNode_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Editing a node is not implemented yet.");
-        }
+   
 
         private void AddEdge_Click(object sender, RoutedEventArgs e)
         {
@@ -91,6 +90,7 @@ namespace Sem_A_NMgr_DSA_2024_2025
                 catch (Exception ex)
                 {
                     ShowErrorMessage(ex);
+                    return;
                 }
 
                 UpdateNodesEdgesGrid();
@@ -101,7 +101,7 @@ namespace Sem_A_NMgr_DSA_2024_2025
                 EdgeWeightInput.Clear();
 
                 UpdateRoutingMatrix(from);
-                UpdateSuccessorVector(to);
+                UpdateSuccessorVector();
             }
         }
 
@@ -125,19 +125,16 @@ namespace Sem_A_NMgr_DSA_2024_2025
                     DrawGraph();
 
                     UpdateRoutingMatrix(from);
-                    UpdateSuccessorVector(to);
+                    UpdateSuccessorVector();
                 }
             }
             else
             {
-                MessageBox.Show("Please select an edge to remove.");
+                ShowWarningMessage("Please select an edge to remove.");
             }
         }
 
-        private void EditEdge_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Editing an edge is not implemented yet.");
-        }
+  
 
         private void ClearAll_Click(object sender, RoutedEventArgs e)
         {
@@ -150,7 +147,6 @@ namespace Sem_A_NMgr_DSA_2024_2025
             _routingMatrixData.Clear();
             _successorVectorData.Clear();
 
-            // Обновляем интерфейс
             UpdateNodesEdgesGrid();
             DrawGraph();
         }
@@ -183,10 +179,8 @@ namespace Sem_A_NMgr_DSA_2024_2025
         }
         private void UpdateShortestPathsGrid(List<string> paths)
         {
-            // Очищаем старые данные
             _routingMatrixData.Clear();
 
-            // Добавляем новые данные
             foreach (var path in paths)
             {
                 var parts = path.Split(new[] { " -> " }, StringSplitOptions.None);
@@ -194,7 +188,7 @@ namespace Sem_A_NMgr_DSA_2024_2025
                 {
                     StartNode = parts[0],
                     EndNode = parts.Last(),
-                    Path = path, // Путь в виде строки
+                    Path = path, 
                     Weight = CalculatePathWeight(path)
                 });
             }
@@ -243,37 +237,7 @@ namespace Sem_A_NMgr_DSA_2024_2025
                 ShowWarningMessage("Please enter a node name.");
             }
         }
-        //private void ExportPathsFromNode_Click(object sender, RoutedEventArgs e)
-        //{
-        //    if (graph.isEmpty())
-        //    {
-        //        ShowWarningMessage("Graph is empty");
-        //        return;
-        //    }
 
-        //    string nodeName = ExportNodeInput.Text;
-        //    if (!string.IsNullOrEmpty(nodeName))
-        //    {
-        //        try
-        //        {
-        //            var paths = graph.ExportPathsFromNode(nodeName);
-
-
-        //            UpdateShortestPathsGrid(paths);
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            ShowErrorMessage(ex);
-        //            return;
-        //        }
-
-        //        UpdateRoutingMatrix(nodeName);
-        //    }
-        //    else
-        //    {
-        //        MessageBox.Show("Please enter a node name.");
-        //    }
-        //}
         private void ExportPathsToNode_Click(object sender, RoutedEventArgs e)
         {
 
@@ -298,7 +262,7 @@ namespace Sem_A_NMgr_DSA_2024_2025
                 return;
             }
 
-            UpdateSuccessorVector(nodeName);
+            UpdateSuccessorVector();
         }
 
         private void SaveGraphToFile_Click(object sender, RoutedEventArgs e)
@@ -396,7 +360,7 @@ namespace Sem_A_NMgr_DSA_2024_2025
                     {
                         string firstNode = graph.GetNodes().First().GetName();
                         UpdateRoutingMatrix(firstNode);
-                        UpdateSuccessorVector(firstNode);
+                        UpdateSuccessorVector();
                         UpdateShortestPathsGrid(graph.ExportPathsFromNode(firstNode));
 
                     }
@@ -420,19 +384,14 @@ namespace Sem_A_NMgr_DSA_2024_2025
             }
         }
 
-        private void UpdateSuccessorVector(string endNode)
+        private void UpdateSuccessorVector()
         {
             _successorVectorData.Clear();
-            var successorVector = graph.GetSuccessorVector(endNode);
 
+            var successorVector = graph.GetSuccessorVector();
             foreach (var entry in successorVector)
             {
-                _successorVectorData.Add(new SuccessorVectorEntry
-                {
-                    Node = entry.Node,
-                    NextNode = entry.NextNode,
-                    Weight = entry.Weight
-                });
+                _successorVectorData.Add(entry);
             }
         }
 
