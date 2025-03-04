@@ -1,0 +1,9 @@
+NODE:a
+NODE:b
+NODE:c
+EDGE:a,b,1
+EDGE:a,c,1
+EDGE:b,a,1
+EDGE:b,c,1
+EDGE:c,a,1
+EDGE:c,b,1
