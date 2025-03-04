@@ -47,5 +47,9 @@ namespace Sem_A_NMgr_DSA_2024_2025.Graph
         {
             return nodes.Values;
         }
+
+        public bool isEmpty() {
+            return nodes.Count == 0;
+        }
     }
 }

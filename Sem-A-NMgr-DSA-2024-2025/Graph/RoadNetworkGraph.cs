@@ -1,4 +1,5 @@
-﻿using System;
+﻿using QuickGraph;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -114,5 +115,112 @@ namespace Sem_A_NMgr_DSA_2024_2025.Graph
 
             return paths;
         }
+
+        public List<RoutingMatrixEntry> GetRoutingMatrix(string startNode)
+        {
+            var routingMatrix = new List<RoutingMatrixEntry>();
+            var shortestPaths = new Dictionary<string, List<string>>();
+
+            // Вычисляем кратчайшие пути от startNode до всех остальных узлов
+            foreach (var node in nodes.Values)
+            {
+                if (node.GetName() != startNode)
+                {
+                    var path = ShortestPath(startNode, node.GetName());
+                    shortestPaths[node.GetName()] = path;
+                }
+            }
+
+            // Заполняем таблицу
+            foreach (var targetNode in nodes.Values)
+            {
+                if (targetNode.GetName() != startNode)
+                {
+                    var path = shortestPaths[targetNode.GetName()];
+                    if (path.Count > 1)
+                    {
+                        routingMatrix.Add(new RoutingMatrixEntry
+                        {
+                            StartNode = startNode,
+                            EndNode = targetNode.GetName(),
+                            NextNode = path[1], // Следующая вершина на пути
+                            Weight = nodes[startNode].GetNeighbors()[nodes[path[1]]]
+                        });
+                    }
+                }
+            }
+
+            return routingMatrix;
+        }
+
+        public List<SuccessorVectorEntry> GetSuccessorVector(string endNode)
+        {
+            var successorVector = new List<SuccessorVectorEntry>();
+
+            // Вычисляем кратчайшие пути от всех узлов до endNode
+            foreach (var node in nodes.Values)
+            {
+                if (node.GetName() != endNode)
+                {
+                    var path = ShortestPath(node.GetName(), endNode);
+                    if (path.Count > 1)
+                    {
+                        successorVector.Add(new SuccessorVectorEntry
+                        {
+                            Node = node.GetName(),
+                            NextNode = path[1], // Следующая вершина на пути
+                            Weight = node.GetNeighbors()[nodes[path[1]]]
+                        });
+                    }
+                }
+            }
+
+            return successorVector;
+        }
+
+        //public BidirectionalGraph<object, IEdge<object>> GenerateDirectedGraph(string startNode)
+        //{
+        //    var directedGraph = new BidirectionalGraph<object, IEdge<object>>();
+
+        //    // Добавляем вершины
+        //    foreach (var node in nodes.Values)
+        //    {
+        //        directedGraph.AddVertex(node.GetName());
+        //    }
+
+        //    // Добавляем рёбра на основе кратчайших путей
+        //    foreach (var node in nodes.Values)
+        //    {
+        //        if (node.GetName() != startNode)
+        //        {
+        //            var path = ShortestPath(startNode, node.GetName());
+        //            for (int i = 0; i < path.Count - 1; i++)
+        //            {
+        //                var edge = new WeightedEdge<object>(path[i], path[i + 1], nodes[path[i]].GetNeighbors()[nodes[path[i + 1]]]);
+        //                directedGraph.AddEdge(edge);
+        //            }
+        //        }
+        //    }
+
+        //    return directedGraph;
+        //}
+    }
+
+    public class RoutingMatrixEntry
+    {
+        public string StartNode { get; set; }
+        public string EndNode { get; set; }
+        public string NextNode { get; set; }
+
+        public string Path { get; set; }
+        public int Weight { get; set; }
+    }
+
+    public class SuccessorVectorEntry
+    {
+        public string Node { get; set; }
+        public string NextNode { get; set; }
+        public int Weight { get; set; }
     }
 }
+

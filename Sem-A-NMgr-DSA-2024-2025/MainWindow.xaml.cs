@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -14,10 +15,18 @@ namespace Sem_A_NMgr_DSA_2024_2025
         private RoadNetworkGraph graph = new RoadNetworkGraph();
         private BidirectionalGraph<object, IEdge<object>> visualGraph = new BidirectionalGraph<object, IEdge<object>>();
 
+        private ObservableCollection<RoutingMatrixEntry> _routingMatrixData = new ObservableCollection<RoutingMatrixEntry>();
+        private ObservableCollection<SuccessorVectorEntry> _successorVectorData = new ObservableCollection<SuccessorVectorEntry>();
+
         public MainWindow()
         {
             InitializeComponent();
             GraphLayout.Graph = visualGraph;
+
+            // Привязка данных
+            ShortestPathsGrid.ItemsSource = _routingMatrixData;
+            SuccessorVectorGrid.ItemsSource = _successorVectorData;
+
             UpdateNodesEdgesGrid();
             DrawGraph();
         }
@@ -32,6 +41,9 @@ namespace Sem_A_NMgr_DSA_2024_2025
                 UpdateNodesEdgesGrid();
                 DrawGraph();
                 NodeNameInput.Clear();
+
+                UpdateRoutingMatrix(nodeName);
+                UpdateSuccessorVector(nodeName);
             }
         }
 
@@ -47,11 +59,14 @@ namespace Sem_A_NMgr_DSA_2024_2025
                     visualGraph.RemoveVertex(nodeName);
                     UpdateNodesEdgesGrid();
                     DrawGraph();
+
+                    UpdateRoutingMatrix(nodeName);
+                    UpdateSuccessorVector(nodeName);
                 }
             }
             else
             {
-                MessageBox.Show("Please select a node to remove.");
+                ShowWarningMessage("Please select a node to remove.");
             }
         }
 
@@ -68,7 +83,15 @@ namespace Sem_A_NMgr_DSA_2024_2025
             {
                 graph.AddEdge(from, to, weight);
                 var edge = new WeightedEdge<object>(from, to, weight);
-                visualGraph.AddEdge(edge);
+
+                try
+                {
+                    visualGraph.AddEdge(edge);
+                }
+                catch (Exception ex)
+                {
+                    ShowErrorMessage(ex);
+                }
 
                 UpdateNodesEdgesGrid();
                 DrawGraph();
@@ -76,6 +99,9 @@ namespace Sem_A_NMgr_DSA_2024_2025
                 EdgeFromInput.Clear();
                 EdgeToInput.Clear();
                 EdgeWeightInput.Clear();
+
+                UpdateRoutingMatrix(from);
+                UpdateSuccessorVector(to);
             }
         }
 
@@ -97,6 +123,9 @@ namespace Sem_A_NMgr_DSA_2024_2025
                     }
                     UpdateNodesEdgesGrid();
                     DrawGraph();
+
+                    UpdateRoutingMatrix(from);
+                    UpdateSuccessorVector(to);
                 }
             }
             else
@@ -112,9 +141,16 @@ namespace Sem_A_NMgr_DSA_2024_2025
 
         private void ClearAll_Click(object sender, RoutedEventArgs e)
         {
+
             graph = new RoadNetworkGraph();
             visualGraph = new BidirectionalGraph<object, IEdge<object>>();
             GraphLayout.Graph = visualGraph;
+
+            NodesEdgesGrid.ItemsSource = null;
+            _routingMatrixData.Clear();
+            _successorVectorData.Clear();
+
+            // Обновляем интерфейс
             UpdateNodesEdgesGrid();
             DrawGraph();
         }
@@ -145,50 +181,289 @@ namespace Sem_A_NMgr_DSA_2024_2025
                 }
             }
         }
-
         private void UpdateShortestPathsGrid(List<string> paths)
         {
-            ShortestPathsGrid.Items.Clear();
+            // Очищаем старые данные
+            _routingMatrixData.Clear();
+
+            // Добавляем новые данные
             foreach (var path in paths)
             {
                 var parts = path.Split(new[] { " -> " }, StringSplitOptions.None);
-                ShortestPathsGrid.Items.Add(new { StartNode = parts[0], EndNode = parts[parts.Length - 1], Path = path, Length = parts.Length - 1 });
+                _routingMatrixData.Add(new RoutingMatrixEntry
+                {
+                    StartNode = parts[0],
+                    EndNode = parts.Last(),
+                    Path = path, // Путь в виде строки
+                    Weight = CalculatePathWeight(path)
+                });
             }
         }
 
+        private int CalculatePathWeight(string path)
+        {
+            var parts = path.Split(new[] { " -> " }, StringSplitOptions.None);
+            int weight = 0;
+            for (int i = 0; i < parts.Length - 1; i++)
+            {
+                var from = parts[i];
+                var to = parts[i + 1];
+                var node = graph.GetNode(from);
+                if (node != null && node.GetNeighbors().ContainsKey(graph.GetNode(to)))
+                {
+                    weight += node.GetNeighbors()[graph.GetNode(to)];
+                }
+            }
+            return weight;
+        }
         private void DrawGraph()
         {
             GraphLayout.Relayout();
         }
+
 
         private void ExportPathsFromNode_Click(object sender, RoutedEventArgs e)
         {
             string nodeName = ExportNodeInput.Text;
             if (!string.IsNullOrEmpty(nodeName))
             {
-                var paths = graph.ExportPathsFromNode(nodeName);
-                UpdateShortestPathsGrid(paths);
+                try
+                {
+                    var paths = graph.ExportPathsFromNode(nodeName);
+                    UpdateShortestPathsGrid(paths);
+                }
+                catch (Exception ex)
+                {
+                    ShowErrorMessage(ex);
+                }
+
             }
             else
             {
-                MessageBox.Show("Please enter a node name.");
+                ShowWarningMessage("Please enter a node name.");
             }
         }
+        //private void ExportPathsFromNode_Click(object sender, RoutedEventArgs e)
+        //{
+        //    if (graph.isEmpty())
+        //    {
+        //        ShowWarningMessage("Graph is empty");
+        //        return;
+        //    }
 
+        //    string nodeName = ExportNodeInput.Text;
+        //    if (!string.IsNullOrEmpty(nodeName))
+        //    {
+        //        try
+        //        {
+        //            var paths = graph.ExportPathsFromNode(nodeName);
+
+
+        //            UpdateShortestPathsGrid(paths);
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            ShowErrorMessage(ex);
+        //            return;
+        //        }
+
+        //        UpdateRoutingMatrix(nodeName);
+        //    }
+        //    else
+        //    {
+        //        MessageBox.Show("Please enter a node name.");
+        //    }
+        //}
         private void ExportPathsToNode_Click(object sender, RoutedEventArgs e)
         {
+
+            if (graph.isEmpty()) ShowWarningMessage("Graph is empty");
+
             string nodeName = ExportNodeInput.Text;
-            if (!string.IsNullOrEmpty(nodeName))
+            if (string.IsNullOrEmpty(nodeName))
+            {
+                ShowWarningMessage("Please enter a node name.");
+                return;
+            }
+
+            try
             {
                 var paths = graph.ExportPathsToNode(nodeName);
                 UpdateShortestPathsGrid(paths);
+
             }
-            else
+            catch (Exception ex)
             {
-                MessageBox.Show("Please enter a node name.");
+                ShowErrorMessage(ex);
+                return;
+            }
+
+            UpdateSuccessorVector(nodeName);
+        }
+
+        private void SaveGraphToFile_Click(object sender, RoutedEventArgs e)
+        {
+            if (graph.isEmpty())
+            {
+                ShowWarningMessage("Graph is empty");
+                return;
+            }
+
+
+            var saveFileDialog = new Microsoft.Win32.SaveFileDialog
+            {
+                Filter = "Graph files (*.graph)|*.graph|All files (*.*)|*.*",
+                DefaultExt = ".graph"
+            };
+
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                string filePath = saveFileDialog.FileName;
+
+                try
+                {
+                    using (var writer = new System.IO.StreamWriter(filePath))
+                    {
+                        foreach (var node in graph.GetNodes())
+                        {
+                            writer.WriteLine($"NODE:{node.GetName()}");
+                        }
+
+                        foreach (var node in graph.GetNodes())
+                        {
+                            foreach (var neighbor in node.GetNeighbors())
+                            {
+                                writer.WriteLine($"EDGE:{node.GetName()},{neighbor.Key.GetName()},{neighbor.Value}");
+                            }
+                        }
+                    }
+
+                    MessageBox.Show("Graph saved successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Failed to save graph: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
+
+        private void LoadGraphFromFile_Click(object sender, RoutedEventArgs e)
+        {
+            var openFileDialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Filter = "Graph files (*.graph)|*.graph|All files (*.*)|*.*",
+                DefaultExt = ".graph"
+            };
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                string filePath = openFileDialog.FileName;
+
+                try
+                {
+                    graph = new RoadNetworkGraph();
+                    visualGraph = new BidirectionalGraph<object, IEdge<object>>();
+                    GraphLayout.Graph = visualGraph;
+
+                    using (var reader = new System.IO.StreamReader(filePath))
+                    {
+                        string line;
+                        while ((line = reader.ReadLine()) != null)
+                        {
+                            if (line.StartsWith("NODE:"))
+                            {
+                                string nodeName = line.Substring("NODE:".Length);
+                                graph.AddNode(nodeName);
+                                visualGraph.AddVertex(nodeName);
+                            }
+                            else if (line.StartsWith("EDGE:"))
+                            {
+                                string[] parts = line.Substring("EDGE:".Length).Split(',');
+                                string from = parts[0];
+                                string to = parts[1];
+                                int weight = int.Parse(parts[2]);
+
+                                graph.AddEdge(from, to, weight);
+                                var edge = new WeightedEdge<object>(from, to, weight);
+                                visualGraph.AddEdge(edge);
+                            }
+                        }
+                    }
+                    UpdateNodesEdgesGrid();
+                    DrawGraph();
+
+                    if (graph.GetNodes().Any())
+                    {
+                        string firstNode = graph.GetNodes().First().GetName();
+                        UpdateRoutingMatrix(firstNode);
+                        UpdateSuccessorVector(firstNode);
+                        UpdateShortestPathsGrid(graph.ExportPathsFromNode(firstNode));
+
+                    }
+
+                    MessageBox.Show("Graph loaded successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Failed to load graph: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private void UpdateRoutingMatrix(string startNode)
+        {
+            _routingMatrixData.Clear();
+            var routingMatrix = graph.GetRoutingMatrix(startNode);
+            foreach (var entry in routingMatrix)
+            {
+                _routingMatrixData.Add(entry);
+            }
+        }
+
+        private void UpdateSuccessorVector(string endNode)
+        {
+            _successorVectorData.Clear();
+            var successorVector = graph.GetSuccessorVector(endNode);
+
+            foreach (var entry in successorVector)
+            {
+                _successorVectorData.Add(new SuccessorVectorEntry
+                {
+                    Node = entry.Node,
+                    NextNode = entry.NextNode,
+                    Weight = entry.Weight
+                });
+            }
+        }
+
+        //private void UpdateDirectedGraph(string startNode)
+        //{
+        //    var directedGraph = graph.GenerateDirectedGraph(startNode);
+        //    DirectedGraphLayout.Graph = directedGraph;
+        //}
+
+        private void ShowErrorMessage(Exception e)
+        {
+            ShowCustomMessage(
+                "An error occurred:\n\n" + e.Message,
+                e.GetType().ToString(),
+                MessageBoxButton.OK,
+                MessageBoxImage.Error
+            );
+        }
+
+        private void ShowWarningMessage(string v)
+        {
+
+            ShowCustomMessage("An error occurred:\n\n" + v,
+            "Warning",
+            MessageBoxButton.OK,
+            MessageBoxImage.Warning);
+        }
+
+        private void ShowCustomMessage(string message, string header, MessageBoxButton button, MessageBoxImage image)
+        {
+            MessageBox.Show(message, header, button, image);
+        }
     }
-
-
 }
